@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Proyectil1
+  - Proyectil2
+  - Weapons
+  - PowerUps_Arma2T1
+  - PowerUps_Arma2T2
+  - WeaponLaser_Double
+  - MissileLauncher_Double
+  - Enemy
+  - Wall
+  - EnemyParent
+  - Life
+  - ScoreText
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - Player
+  - Water
+  - UI
+  - Barrier
+  - Enemys
+  - Bullets
+  - Walls
+  - Laser
+  - Misiles
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
