@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEditorInternal.VersionControl;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -10,19 +11,41 @@ public class PlayerMoveController : MonoBehaviour
     public float movespeed = 5f;
     public float maxSpeed = 5f;
     private Vector3 movement;
-   // public GameObject proyectil2;
+    // public GameObject proyectil2;
 
-    private Arma1[] proyectile1;
-    private Arma2[] proyectile2;
+    private Arma1 proyectile1;
+
 
 
     public float fireRatioAttack1 = 0.1f;
     public float fireRatioAttack2 = 1f;
     private bool attack1Wait;
     private bool attack2Wait;
+
+
+
+
+    private Transform characterTransform;
+    private Camera mainCamera;
+    public float rotationSpeed = 180f;
+
+    public LayerMask roofLayerMask;
+    public GameObject player;
+    private GameObject currentRoof;
+    private GameObject previousRoof = null;
+
+
+
+    private Rigidbody proyectileRb;
+    public Rigidbody bullet;
+    public Transform fireposition;
+    public float proyectileForce = 20;
     void Start()
     {
-        transform.localPosition = new Vector3(0, 1, 0);
+        characterTransform = GetComponent<Transform>();
+        mainCamera = Camera.main;
+
+        //transform.localPosition = new Vector3(0, 1, 0);
         playerRb = GetComponent<Rigidbody>();
         attack1Wait = false;
         //   movement.z = 0;
@@ -35,81 +58,70 @@ public class PlayerMoveController : MonoBehaviour
         movement.z = Input.GetAxisRaw("Vertical");
         movement.Normalize();
 
-        if (Input.GetMouseButton(0) && !attack1Wait)
+        Vector3 rayDirection = (player.transform.position - mainCamera.transform.position).normalized;
+        /*
+        Ray rayCamera = new Ray(mainCamera.transform.position, rayDirection);
+        RaycastHit hitRoof;
+
+        Debug.DrawRay(rayCamera.origin, rayCamera.direction, Color.green);
+        if (Physics.Raycast(rayCamera, out hitRoof, Mathf.Infinity, roofLayerMask))
         {
-
-            StartCoroutine(Attack1());
-        }
-
-        if(Input.GetMouseButtonDown(1) && !attack2Wait)
+            currentRoof = hitRoof.collider.gameObject;
+            Transparent transparent = hitRoof.collider.GetComponent<Transparent>();
+            bool isTransparent = transparent.IsTransparent;
+            if (!isTransparent)
             {
-            StartCoroutine(Attack2());
+                //string objectName = hitRoof.collider.gameObject.name;
+                // Debug.Log("Raycast intersectó con: " + objectName);
+                StartCoroutine(hitRoof.collider.GetComponent<ITransparent>().TransparentOn());
+                previousRoof = currentRoof;
+            }
+            if (previousRoof != currentRoof)
+            {
+                StartCoroutine(previousRoof.GetComponent<Transparent>().TransparentOff());
+            }
+        }
+        */
+
+
+
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit))
+        {
+            Vector3 targetPosition = new Vector3(hit.point.x, characterTransform.position.y, hit.point.z);
+            Vector3 direction = targetPosition - characterTransform.position;
+
+            if (direction != Vector3.zero)
+            {
+                Quaternion toRotation = Quaternion.LookRotation(direction);
+                characterTransform.rotation = Quaternion.RotateTowards(characterTransform.rotation, toRotation, rotationSpeed * Time.deltaTime);
+            }
         }
 
-        if(Input.GetKeyDown(KeyCode.R))
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            Debug.Log("attack");
+            proyectileRb = Instantiate(bullet, fireposition.position, Quaternion.identity);
+            proyectileRb.AddRelativeForce(fireposition.forward * proyectileForce, ForceMode.Impulse);
+            //StartCoroutine(Attack1());
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
-
-
     }
+
+
+
     // Update is called once per frame
     void FixedUpdate()
     {
-        if (movement.magnitude == 0f)
-        {
-            playerRb.velocity = Vector3.zero;
-        }
-        else if (playerRb.velocity.magnitude > maxSpeed)
-        {
-            playerRb.velocity = playerRb.velocity.normalized * maxSpeed;
-        }
-        else
-        {
-            playerRb.AddRelativeForce(movement * movespeed, ForceMode.Impulse);
-        }
+        playerRb.MovePosition(playerRb.position + movement * movespeed * Time.fixedDeltaTime);
     }
-
-    IEnumerator Attack1()
-    {
-        //  
-
-        proyectile1 = GameObject.FindObjectsOfType<Arma1>();
-
-        for (int i = 0; i < proyectile1.Length; i++)
-        {
-            proyectile1[i].Fire();
-        }
-        attack1Wait=true;
-        yield return new WaitForSecondsRealtime(fireRatioAttack1);
-        attack1Wait = false;
-       // Debug.Log("attack 1");
-    }
-
-    IEnumerator Attack2()
-    {
-
-       
-
-        proyectile2 = GameObject.FindObjectsOfType<Arma2>();
-
-        for(int i = 0; i < proyectile2.Length; i++)
-        {
-            proyectile2[i].Fire();
-        }
-        attack2Wait = true;
-        yield return new WaitForSecondsRealtime(fireRatioAttack2);
-        attack2Wait = false;
-
-
-
-
-
-        //Debug.Log("attack 2");
-
-    }
-
-
 
 
 }

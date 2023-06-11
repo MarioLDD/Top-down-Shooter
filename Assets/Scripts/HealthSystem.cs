@@ -6,18 +6,14 @@ using UnityEngine.SceneManagement;
 
 public class HealthSystem : MonoBehaviour, IHealthSystem
 {
-    public int maxHealth = 3;
+    public int maxHealth = 100;
     [SerializeField] private int currentHealth;
     public int CurrenHealth { set => currentHealth = value; }
     public bool player = false;
-    public bool boss = false;
     public bool modoDios = false;
-    public List<GameObject> vidaUI;
-
-
     private FloatingHealthBar healthBar;
+    public Enemy enemy;
 
-    // Start is called before the first frame update
     void Start()
     {
         modoDios = false;
@@ -27,7 +23,12 @@ public class HealthSystem : MonoBehaviour, IHealthSystem
         {
             healthBar.UpdateHealthBar(currentHealth, maxHealth);
         }
+        if (GetComponent<Enemy>() != null)
+        {
+            enemy = GetComponent<Enemy>();
+        }
     }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.T))
@@ -39,62 +40,60 @@ public class HealthSystem : MonoBehaviour, IHealthSystem
         {
             currentHealth = maxHealth;
         }
-
-
     }
+
     public void TakeDamage(int damageAmount)
     {
-       
-        currentHealth -= damageAmount;
-        
-        
-            if (healthBar != null)
-            {
-                healthBar.UpdateHealthBar(currentHealth, maxHealth);
-            }
 
+        currentHealth -= damageAmount;
+
+
+        if (healthBar != null)
+        {
+            healthBar.UpdateHealthBar(currentHealth, maxHealth);
+        }
+
+        /* if (player)
+         {
+             vidaUI[currentHealth].SetActive(false);
+             Debug.Log(currentHealth);
+         }*/
+
+        if (currentHealth <= 0)
+        {
             if (player)
             {
-                vidaUI[currentHealth].SetActive(false);
-                Debug.Log(currentHealth);
+                SceneManager.LoadScene("GameOverMenu");
             }
-
-            if (currentHealth <= 0)
+            /*else if (boss)
             {
-                if (player)
-                {
-                    SceneManager.LoadScene("GameOverMenu");
-                }
-                else if (boss)
-                {
-                    //explosiones
-                    Destroy(gameObject);
-                }
-                else
-                {
-                    Destroy(gameObject);
-                }
-            }
-        
-    }
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (player && collision.gameObject.CompareTag("Life"))
-        {
-            if (currentHealth < 5)
+                //explosiones
+                Destroy(gameObject);
+            }*/
+            else
             {
-                vidaUI[currentHealth].SetActive(true);
-                currentHealth++;
-                Debug.Log(currentHealth);
-
-                Destroy(collision.gameObject);
+                enemy.Dead();
             }
-
         }
     }
 
 
 
-
-
+    private void OnTriggerEnter(Collider other)
+    {
+        if (player && other.gameObject.CompareTag("Life"))
+        {
+            Debug.Log("curar");
+            if (currentHealth < 200)
+            {
+                currentHealth = currentHealth + 50;
+                if (currentHealth > 200)
+                {
+                    currentHealth = 200;
+                }
+                healthBar.UpdateHealthBar(currentHealth, maxHealth);
+                Destroy(other.gameObject);
+            }
+        }
+    }
 }
